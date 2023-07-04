@@ -250,7 +250,7 @@ class TSPSolver3D():
 
     # #{ clusterViewpoints()
 
-    def clusterViewpoints(self, problem, viewpoints, method):
+    def clusterViewpoints(self, problem:InspectionProblem, viewpoints, method):
         '''
         Clusters viewpoints into K (number of robots) clusters.
 
@@ -269,14 +269,30 @@ class TSPSolver3D():
             # Prepare positions of the viewpoints in the world
             positions = np.array([vp.pose.point.asList() for vp in viewpoints])
 
-            raise NotImplementedError('[STUDENTS TODO] KMeans clustering of viewpoints not implemented. You have to finish it on your own')
+            #raise NotImplementedError('[STUDENTS TODO] KMeans clustering of viewpoints not implemented. You have to finish it on your own')
             # Tips:
             #  - utilize sklearn.cluster.KMeans implementation (https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)
             #  - after finding the labels, you may want to swap the classes (e.g., by looking at the distance of the UAVs from the cluster centers)
             #  - Find the start poses of the UAVs in problem.start_poses.position.{x,y,z}
 
             # TODO: fill 1D list 'labels' of size len(viewpoints) with indices of the robots
-            labels = [randint(0, k - 1) for vp in viewpoints]
+            print('    [clusterViewpoints] running KMeans')
+            kmeans:KMeans = KMeans(2).fit(positions)
+            labels = kmeans.predict(positions)
+
+            from geometry_msgs.msg._Point import Point as P
+            robot0:P = problem.start_poses[0].position
+            robot1:P = problem.start_poses[1].position
+            robot0:Point = Point(robot0.x,robot0.y,robot0.z)
+            robot1:Point = Point(robot1.x, robot1.y, robot1.z)
+            cluster0:Point = Point(*kmeans.cluster_centers_[0].tolist())
+            cluster1:Point = Point(*kmeans.cluster_centers_[1].tolist())
+            if (cluster0-robot0).norm() > (cluster0-robot1).norm():
+                print('    [clusterViewpoints] Swapping clusters')
+                labels -= 1
+                labels = np.abs(labels)
+            else:
+                print('    [clusterViewpoints] No cluster swapping needed')
 
         ## | -------------------- Random clustering ------------------- |
         else:
