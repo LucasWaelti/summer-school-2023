@@ -1,5 +1,6 @@
 import numpy as np
 import random, time
+import copy
 from utils import distEuclidean
 from data_types import Point
 
@@ -252,9 +253,21 @@ class RRT:
 
         rrtstar                      = rrtstar_neighborhood is not None
         start_time                   = time.time()
+
+        start_tree = copy.deepcopy(self.tree)
+        Nrun_max = 3
+        Nrun = 1
+
         rrt_gaussian_sigma_inflation = 0.0
 
+
+
         while not self.tree.valid:
+
+            #start over if a internal run is used up.
+            if time.time() - start_time > Nrun/Nrun_max * self.timeout:
+                self.tree = start_tree
+                Nrun += 1
 
             point         = self.getRandomPoint() if not self.gaussian_sampling else self.getRandomPointGaussian(rrt_gaussian_sigma_inflation)
             closest_point = self.getClosestPoint(point)
@@ -285,7 +298,6 @@ class RRT:
             elif self.gaussian_sampling:
                 rrt_gaussian_sigma_inflation += self.gaussian_sampling_sigma_inflation
 
-            # TODO implement a restart on thirds
             if time.time() - start_time > self.timeout:
                 print("[ERROR] {:s}: Timeout limit in buildTree() exceeded ({:.1f} s > {:.1f} s). Ending.".format('RRT*' if rrtstar else 'RRT', time.time() - start_time, self.timeout))
                 return
