@@ -165,7 +165,7 @@ class TrajectoryUtils():
 
         idx = 0
         while idx != (len(waypoints) - 1):
-            g_from  = waypoints[idx]
+            g_from:Pose  = waypoints[idx]
 
             # Find subtraj: sequence of poses (included) with defined heading
             subtraj = [g_from]
@@ -179,7 +179,7 @@ class TrajectoryUtils():
                     break
 
             # get desired heading change from the beginning to end of this subtrajectory
-            g_to  = subtraj[-1]
+            g_to:Pose  = subtraj[-1]
             delta_heading = wrapAngle(g_to.heading - g_from.heading)
 
             # get initial heading and subtraj length
@@ -192,11 +192,10 @@ class TrajectoryUtils():
             # include start node
             wps_interp.append(subtraj[0])
 
+            D = (g_from.point - g_to.point).norm() # distance between two subtraj extremes (start and end)
+
             # interpolate headings
             for i in range(1, len(subtraj) - 1):
-
-                subtraj_0:Point = subtraj[i - 1].point
-                subtraj_1:Point = subtraj[i].point
 
                 # [STUDENTS TODO] Implement heading interpolation here
                 # Tips:
@@ -205,19 +204,14 @@ class TrajectoryUtils():
                 #  - do not forget to wrap angle to (-pi, pi) (see/use wrapAngle() in utils.py)
                 #  - see/use distEuclidean() in utils.py
 
-                pose_0:Pose = subtraj[i - 1]
                 pose_1:Pose = subtraj[i]
-                pose_0.heading = wrapAngle(pose_0.heading)
-                pose_1.heading = wrapAngle(pose_1.heading)
-                print("pose_0.heading", pose_0.heading)
-                print("pose_1.heading", pose_1.heading)
-                print("subtraj_0", subtraj_0)
-                print("subtraj_1", subtraj_1)
-                print("subtraj_len", subtraj_len)
-                exit() # DEBUG 
+
+                d = (g_from.point - pose_1.point).norm()
+
+                a = wrapAngle(d/D * delta_heading) # interpolation angle
 
                 # [STUDENTS TODO] Change variable 'desired_heading', nothing else
-                desired_heading = waypoints[0].heading
+                desired_heading = a
 
                 # replace heading
                 current_heading   = desired_heading
