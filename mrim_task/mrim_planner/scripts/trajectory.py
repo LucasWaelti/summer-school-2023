@@ -454,7 +454,10 @@ class TrajectoryUtils():
             # Interpolate heading between waypoints
             traj_hdg_interp = self.interpolateHeading(waypoints)
             # Parametrize trajectory
-            toppra_trajectory = self.getParametrizedTrajectory(traj_hdg_interp, velocity_limits, acceleration_limits)
+            print(velocity_limits)
+            print(acceleration_limits)
+            tol = 0.01 #add tol to limits to not violate constraints by rounding errors
+            toppra_trajectory = self.getParametrizedTrajectory(traj_hdg_interp, [vl-tol for vl in velocity_limits], [al-tol for al in acceleration_limits])
 
             sampling_step = trajectory.dT
             duration = toppra_trajectory.duration

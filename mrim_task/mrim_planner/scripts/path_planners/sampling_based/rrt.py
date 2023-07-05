@@ -285,6 +285,7 @@ class RRT:
             elif self.gaussian_sampling:
                 rrt_gaussian_sigma_inflation += self.gaussian_sampling_sigma_inflation
 
+            # TODO implement a restart on thirds
             if time.time() - start_time > self.timeout:
                 print("[ERROR] {:s}: Timeout limit in buildTree() exceeded ({:.1f} s > {:.1f} s). Ending.".format('RRT*' if rrtstar else 'RRT', time.time() - start_time, self.timeout))
                 return
