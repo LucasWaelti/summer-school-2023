@@ -71,7 +71,7 @@ class Point:
         if isinstance (other, float):
 
             if np.abs(other) < 1e-8:
-                print('[ERROR] Trying to create Point object from incorrect input values. Ending. Values:', args)
+                print('[ERROR] Trying to create Point object from incorrect input values. Ending. Values:', other)
                 exit(-5)
 
             return Point(self.x / other, self.y / other, self.z / other)

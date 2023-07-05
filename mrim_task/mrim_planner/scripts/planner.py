@@ -134,7 +134,7 @@ class MrimPlanner:
     # # #}
 
     # # #{ planTrajectories()
-    def planTrajectories(self, problem):
+    def planTrajectories(self, problem:InspectionProblem):
 
         ## | --------------- create visualization object -------------- |
         plotter = ProblemPlotter(self._plot)
