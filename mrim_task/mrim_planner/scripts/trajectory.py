@@ -618,22 +618,26 @@ class TrajectoryUtils():
         ## |  [COLLISION AVOIDANCE METHOD #2]: Delay UAV with shorter trajectory at start until there is no collision occurring  |
         elif method == 'delay_till_no_collisions_occur':
 
-            raise NotImplementedError('[STUDENTS TODO] Collision prevention method \'delay_till_no_collisions_occur\' not finished. You have to finish it on your own.')
+            #raise NotImplementedError('[STUDENTS TODO] Collision prevention method \'delay_till_no_collisions_occur\' not finished. You have to finish it on your own.')
             # Tips:
             #  - you might select which trajectory it is better to delay
             #  - the smallest delay step is the sampling step stored in variable 'self.dT'
 
-            delay_step = self.dT
-            traj_times = [t.getTime() for t in trajectories]
-            traj_lens  = [t.getLength() for t in trajectories]
+            delay_step = self.dT*10
+            print('    [trajectory::resolveCollisions] delay step: {:.2f}'.format(delay_step))
+            traj_times = [t.getTime() for t in trajectories] # time of each trajectory
+            traj_lens  = [t.getLength() for t in trajectories] # length of each trajectory
 
             # Decide which UAV should be delayed
             # [STUDENTS TODO] CHANGE BELOW
-            delay_robot_idx, nondelay_robot_idx = 0, 1
+            delay_robot_idx, nondelay_robot_idx = (0, 1) if traj_times[0] < traj_times[1] else (1, 0) # delay the UAV with shorter trajectory (time)
 
             # TIP: use function `self.trajectoriesCollide()` to check if two trajectories are in collision
             collision_flag, collision_idx = \
                 self.trajectoriesCollide(trajectories[delay_robot_idx], trajectories[nondelay_robot_idx], safety_distance)
+
+            if collision_flag: print('    [trajectory::resolveCollisions] collision detected at index {:d}'.format(collision_idx))
+            else: print('    [trajectory::resolveCollisions] no collision detected')
 
             i = 0
             while collision_flag:
@@ -642,10 +646,15 @@ class TrajectoryUtils():
 
                 if i < 10:
                     delay_t += delay_step
+                    print('    [trajectory::resolveCollisions] delaying UAV {:d} by {:.2f} seconds'.format(delay_robot_idx, delay_t))
                     # TIP: use function `trajectory.delayStart(X)` to delay a UAV at the start location by X seconds
                     trajectories[delay_robot_idx].delayStart(delay_step)
+                    collision_flag, collision_idx = \
+                        self.trajectoriesCollide(trajectories[delay_robot_idx], trajectories[nondelay_robot_idx], safety_distance)
                 else:
                     collision_flag = False
+                    print('    [trajectory::resolveCollisions] collision not resolved after 10 iterations')
+            print('    [trajectory::resolveCollisions] collision resolution finished')
 
         # # #}
 
