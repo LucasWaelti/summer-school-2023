@@ -82,6 +82,7 @@ class RRT:
         if straighten:
             for i in range(2):
                 path = self.halveAndTest(path)
+                path = self.halveAndTest(path[::-1])[::-1] # solve on reversed path as well!! 
 
         distance = 0.0
         for i in range(1, len(path)):
@@ -312,7 +313,6 @@ class RRT:
             seg1.extend(seg2)
             return seg1
         
-        print("Path straightening finished. YAAAAAAY!!!")
         return [path[0], path[-1]]
     # # #}
 
