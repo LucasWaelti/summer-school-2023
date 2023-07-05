@@ -144,6 +144,8 @@ else
   NVIDIA_ARG=""
 fi
 
+NVIDIA_ARG=""
+
 if $DETACH_TMP; then
   TMP_PATH="/tmp/singularity/tmp"
   DETACH_TMP_ARG="--bind $TMP_PATH:/tmp"

@@ -830,9 +830,9 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: true
-  Width: 1890
-  X: 1932
-  Y: 556
+    collapsed: false
+  Width: 1200
+  X: 0
+  Y: 0
   YesNoButton:
     collapsed: false
