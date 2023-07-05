@@ -7,7 +7,7 @@ import math
 import dubins
 
 from utils import segmentPointDist, distEuclidean, lineSphereIntersections, simulateStep, wrapAngle, angleDiff, poseInDistance
-from data_types import Pose, Viewpoint
+from data_types import Point, Pose, Viewpoint
 import numpy as np
 
 import toppra as ta
@@ -195,8 +195,8 @@ class TrajectoryUtils():
             # interpolate headings
             for i in range(1, len(subtraj) - 1):
 
-                subtraj_0 = subtraj[i - 1].point
-                subtraj_1 = subtraj[i].point
+                subtraj_0:Point = subtraj[i - 1].point
+                subtraj_1:Point = subtraj[i].point
 
                 # [STUDENTS TODO] Implement heading interpolation here
                 # Tips:
@@ -204,6 +204,17 @@ class TrajectoryUtils():
                 #  - interpolate the heading linearly (create a function of distance between two points of the subpath)
                 #  - do not forget to wrap angle to (-pi, pi) (see/use wrapAngle() in utils.py)
                 #  - see/use distEuclidean() in utils.py
+
+                pose_0:Pose = subtraj[i - 1]
+                pose_1:Pose = subtraj[i]
+                pose_0.heading = wrapAngle(pose_0.heading)
+                pose_1.heading = wrapAngle(pose_1.heading)
+                print("pose_0.heading", pose_0.heading)
+                print("pose_1.heading", pose_1.heading)
+                print("subtraj_0", subtraj_0)
+                print("subtraj_1", subtraj_1)
+                print("subtraj_len", subtraj_len)
+                exit() # DEBUG 
 
                 # [STUDENTS TODO] Change variable 'desired_heading', nothing else
                 desired_heading = waypoints[0].heading
