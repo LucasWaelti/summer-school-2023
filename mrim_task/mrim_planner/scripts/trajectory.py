@@ -401,7 +401,7 @@ class TrajectoryUtils():
     # #}
 
     # #{ sampleTrajectoryThroughWaypoints()
-    def sampleTrajectoryThroughWaypoints(self, trajectory, with_stops, smooth_path, smoothing_la_dist, smoothing_sampling_step, velocity_limits, acceleration_limits):
+    def sampleTrajectoryThroughWaypoints(self, trajectory:Trajectory, with_stops, smooth_path, smoothing_la_dist, smoothing_sampling_step, velocity_limits, acceleration_limits):
         '''
         Samples trajectory such that it respects dynamic constraints
 
@@ -440,9 +440,9 @@ class TrajectoryUtils():
         else:
 
             # If path smoothing is required, smooth the path
-            if smooth_path:
+            if smooth_path: # forced to true
                 print('[SMOOTHING PATH]')
-                waypoints = self.getSmoothPath(trajectory.waypoints, smoothing_la_dist, smoothing_sampling_step)
+                waypoints = self.getSmoothPath(trajectory.waypoints, smoothing_la_dist, smoothing_sampling_step) # list of Pose
 
             # Otherwise, use the waypoints
             else:
@@ -457,14 +457,18 @@ class TrajectoryUtils():
             toppra_trajectory = self.getParametrizedTrajectory(traj_hdg_interp, velocity_limits, acceleration_limits)
 
             sampling_step = trajectory.dT
+            duration = trajectory.getTime()
 
             # STUDENTS TODO: Sample the path parametrization 'toppra_trajectory' (instance of TOPPRA library).
-            raise NotImplementedError('[STUDENTS TODO] Trajectory sampling not finished. You have to implement it on your own.')
+            #raise NotImplementedError('[STUDENTS TODO] Trajectory sampling not finished. You have to implement it on your own.')
             # Tips:
             #  - check code examples for TOPPRA (look for eval() function): https://hungpham2511.github.io/toppra/index.html
             #  - use 'toppra_trajectory' and the predefined sampling step 'sampling_step'
 
-            samples = [] # [STUDENTS TODO] Fill this variable with trajectory samples
+            print('EVAL',toppra_trajectory.eval(0)) # returns [x y z heading]
+
+            # TODO: finish this 
+            samples = [toppra_trajectory.eval(t) for t in range(0,trajectory.getLength())] # [STUDENTS TODO] Fill this variable with trajectory samples
 
             # Convert to Trajectory class
             poses      = [Pose(q[0], q[1], q[2], q[3]) for q in samples]
