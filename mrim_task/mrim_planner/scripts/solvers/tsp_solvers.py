@@ -130,7 +130,7 @@ class TSPSolver3D():
 
     # # #{ compute_path()
 
-    def compute_path(self, p_from, p_to, path_planner, path_planner_method):
+    def compute_path(self, p_from:Pose, p_to:Pose, path_planner, path_planner_method):
         '''
         Computes collision-free path (if feasible) between two points
 
