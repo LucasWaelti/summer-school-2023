@@ -208,7 +208,7 @@ class TrajectoryUtils():
 
                 d = (g_from.point - pose_1.point).norm()
 
-                a = wrapAngle(d/D * delta_heading) # interpolation angle
+                a = wrapAngle(hdg_from + d/D * delta_heading) # interpolation angle
 
                 # [STUDENTS TODO] Change variable 'desired_heading', nothing else
                 desired_heading = a
