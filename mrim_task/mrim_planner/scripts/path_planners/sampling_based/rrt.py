@@ -62,7 +62,8 @@ class RRT:
 
         self.tree              = Tree(self.start)
         self.bounds            = path_planner['bounds']
-        self.kdtree            = path_planner['obstacles_kdtree']
+        from scipy.spatial import cKDTree as KDTree
+        self.kdtree:KDTree     = path_planner['obstacles_kdtree']
         self.safety_distance   = path_planner['safety_distance']
         self.timeout           = path_planner['timeout']
         
@@ -104,7 +105,7 @@ class RRT:
 
         # check if point is at least safety_distance away from the nearest obstacle
         nn_dist, _  = self.kdtree.query(point.asList(), k=1)
-        return nn_dist > self.safety_distance + 0.5 # inflate distance a bit for safety 
+        return nn_dist > self.safety_distance + 0.1 # inflate distance a bit for safety 
     # # #}
 
     # # #{ getRandomPoint()
@@ -127,10 +128,10 @@ class RRT:
     # # #}
 
     # # #{ getRandomPointGaussian()
-    def getRandomPointGaussian(self, sigma_offset=0.0):
+    def getRandomPointGaussian(self, point, sigma_offset=0.0):
         
         # Compute mean and standard deviation
-        st, en = [self.start[i] for i in range(3)], [self.end[i] for i in range(3)]
+        st, en = [point[i] for i in range(3)], [self.end[i] for i in range(3)]
         mean   = np.mean([st, en], axis=0)
         sigma  = np.std([st, en], axis=0)
 
@@ -150,9 +151,9 @@ class RRT:
             #  - to prevent deadlocks when sampling continuously, increase the sampling space by inflating the standard deviation of the gaussian sampling
 
             # STUDENTS TODO: Sample XYZ in the state space
-            x = np.random.normal(mean[0], sigma[0] * sigma_offset)
-            y = np.random.normal(mean[1], sigma[1] * sigma_offset)
-            z = np.random.normal(mean[2], sigma[2] * sigma_offset)
+            x = np.random.normal(mean[0], np.max(sigma) * sigma_offset)
+            y = np.random.normal(mean[1], np.max(sigma) * sigma_offset)
+            z = np.random.normal(mean[2], np.max(sigma) * sigma_offset)
 
             point = Point(x, y, z)
             point_valid = self.pointValid(point)
@@ -259,21 +260,37 @@ class RRT:
         rrtstar                      = rrtstar_neighborhood is not None
         start_time                   = time.time()
 
-        rrt_gaussian_sigma_inflation = 0.0
+        new_start = self.start
+
+        if self.gaussian_sampling:
+            rrt_gaussian_sigma_inflation = self.gaussian_sampling_sigma_inflation
 
         while not self.tree.valid:
 
+            # Try and find a valid point between start and goal
+            # print(f'\nDEBUG - finding point between {self.start} and {self.end} (distance {distEuclidean(self.start, self.end)})')
+            while True: 
+                point         = self.getRandomPoint() if not self.gaussian_sampling else self.getRandomPointGaussian(new_start, rrt_gaussian_sigma_inflation)
+                closest_point = self.getClosestPoint(point)
+                if distEuclidean(point, closest_point) > 0.1:
+                    break
+                if self.gaussian_sampling:
+                    rrt_gaussian_sigma_inflation += self.gaussian_sampling_sigma_inflation
+                    if rrt_gaussian_sigma_inflation > 5.0: 
+                        rrt_gaussian_sigma_inflation = 5.0 
 
-            point         = self.getRandomPoint() if not self.gaussian_sampling else self.getRandomPointGaussian(rrt_gaussian_sigma_inflation)
-            closest_point = self.getClosestPoint(point)
+            if self.gaussian_sampling:
+                rrt_gaussian_sigma_inflation = self.gaussian_sampling_sigma_inflation # reset gaussian inflation
+
            
             # normalize vector closest_point->point to length of branch_size
             point = self.setDistance(closest_point, point, branch_size)
 
-            #print('DEBUG - checking line')
+            # print(f'DEBUG - found point {point}')
+            
             if self.validateLinePath(point, closest_point, check_bounds=True):
 
-                #print(f'\n{closest_point}->{point} solved!')
+                # print(f'DEBUG - line valid, adding point {point} to tree')
 
                 if not rrtstar:
                     parent, cost = closest_point, distEuclidean(point, closest_point)
@@ -282,22 +299,53 @@ class RRT:
                     parent, cost = self.getParentWithOptimalCost(point, closest_point, rrtstar_neighborhood)
 
                 self.tree.add_node(point, parent, cost)
+                new_start = point
+                # print('DEBUG - tree size:',len(self.tree.nodes))
 
                 if rrtstar:
                     # RRT*: Rewire all neighbors
                     self.rewire(point, rrtstar_neighborhood)
 
+                # DEBUG - plot the points for long trees (RRT failed case)
+                if len(self.tree.nodes) > 100: # plot the points
+                    from matplotlib import pyplot as plt
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111, projection='3d')
+                    ax.scatter(self.start[0], self.start[1], self.start[2], c='r')
+                    ax.scatter(self.end[0], self.end[1], self.end[2], c='g')
+                    
+                    ax.scatter(point[0], point[1], point[2], c='b', marker='x')
+                    # plot the tree
+                    tr = np.zeros((len(self.tree.nodes),3))
+                    for i,p in enumerate(self.tree.nodes):
+                        tr[i,0] = p[0]
+                        tr[i,1] = p[1]
+                        tr[i,2] = p[2]
+                    ax.plot(tr[:,0], tr[:,1], tr[:,2], c='b',alpha=0.8)
+                    
+                    # plot the obstacle points in the kdtree as well
+                    kdtree = self.kdtree
+                    kdtree_points = kdtree.data
+                    ax.scatter(kdtree_points[:,0], kdtree_points[:,1], kdtree_points[:,2], c='k',alpha=0.5,s=0.5)
+                    
+                    plt.show()
+
+                # print('distEuclidean(point, self.end) < branch_size:', distEuclidean(point, self.end) < branch_size)
+                # print('self.validateLinePath(point, self.end):', self.validateLinePath(point, self.end))
                 # Check, whether end is reachable. If yes, stop the tree generation.
-                if distEuclidean(point, self.end) < branch_size and self.validateLinePath(point, self.end):
+                if self.validateLinePath(point, self.end): # distEuclidean(point, self.end) < branch_size and 
                     self.tree.add_node(self.end, point, self.tree.get_cost(point) + distEuclidean(self.end, point))
                     self.tree.valid = True
+                # else: 
+                #     print(f'DEBUG - end not reachable, continuing')
+                    
             
             # Gaussian sampling: increase standard deviation of the sampling Normal distribution
             elif self.gaussian_sampling:
-                #print(f'{closest_point}->{point} bad (sigma: {rrt_gaussian_sigma_inflation:.2f})',end='\r')
+                # print(f'DEBUG - line invalid')
                 rrt_gaussian_sigma_inflation += self.gaussian_sampling_sigma_inflation
-                if rrt_gaussian_sigma_inflation > 2.0: 
-                    rrt_gaussian_sigma_inflation = 2.0 
+                if rrt_gaussian_sigma_inflation > 5.0: 
+                    rrt_gaussian_sigma_inflation = 5.0 
 
             if time.time() - start_time > self.timeout:
                 print("[ERROR] {:s}: Timeout limit in buildTree() exceeded ({:.1f} s > {:.1f} s). Ending.".format('RRT*' if rrtstar else 'RRT', time.time() - start_time, self.timeout))
