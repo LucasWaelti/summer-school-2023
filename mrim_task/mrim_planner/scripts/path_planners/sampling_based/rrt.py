@@ -105,7 +105,7 @@ class RRT:
 
         # check if point is at least safety_distance away from the nearest obstacle
         nn_dist, _  = self.kdtree.query(point.asList(), k=1)
-        return nn_dist > self.safety_distance + 0.5 # inflate distance a bit for safety 
+        return nn_dist > self.safety_distance + 0.1 # inflate distance a bit for safety 
     # # #}
 
     # # #{ getRandomPoint()
@@ -306,29 +306,29 @@ class RRT:
                     # RRT*: Rewire all neighbors
                     self.rewire(point, rrtstar_neighborhood)
 
-                # DEBUG - plot the points for long trees (RRT failed case)
-                if len(self.tree.nodes) > 100: # plot the points
-                    from matplotlib import pyplot as plt
-                    fig = plt.figure()
-                    ax = fig.add_subplot(111, projection='3d')
-                    ax.scatter(self.start[0], self.start[1], self.start[2], c='r')
-                    ax.scatter(self.end[0], self.end[1], self.end[2], c='g')
+                # # DEBUG - plot the points for long trees (RRT failed case)
+                # if len(self.tree.nodes) > 50: # plot the points
+                #     from matplotlib import pyplot as plt
+                #     fig = plt.figure()
+                #     ax = fig.add_subplot(111, projection='3d')
+                #     ax.scatter(self.start[0], self.start[1], self.start[2], c='r')
+                #     ax.scatter(self.end[0], self.end[1], self.end[2], c='g')
                     
-                    ax.scatter(point[0], point[1], point[2], c='b', marker='x')
-                    # plot the tree
-                    tr = np.zeros((len(self.tree.nodes),3))
-                    for i,p in enumerate(self.tree.nodes):
-                        tr[i,0] = p[0]
-                        tr[i,1] = p[1]
-                        tr[i,2] = p[2]
-                    ax.plot(tr[:,0], tr[:,1], tr[:,2], c='b',alpha=0.8)
+                #     ax.scatter(point[0], point[1], point[2], c='b', marker='x')
+                #     # plot the tree
+                #     tr = np.zeros((len(self.tree.nodes),3))
+                #     for i,p in enumerate(self.tree.nodes):
+                #         tr[i,0] = p[0]
+                #         tr[i,1] = p[1]
+                #         tr[i,2] = p[2]
+                #     ax.plot(tr[:,0], tr[:,1], tr[:,2], c='b',alpha=0.8)
                     
-                    # plot the obstacle points in the kdtree as well
-                    kdtree = self.kdtree
-                    kdtree_points = kdtree.data
-                    ax.scatter(kdtree_points[:,0], kdtree_points[:,1], kdtree_points[:,2], c='k',alpha=0.5,s=0.5)
+                #     # plot the obstacle points in the kdtree as well
+                #     kdtree = self.kdtree
+                #     kdtree_points = kdtree.data
+                #     ax.scatter(kdtree_points[:,0], kdtree_points[:,1], kdtree_points[:,2], c='k',alpha=0.5,s=0.5)
                     
-                    plt.show()
+                #     plt.show()
 
                 # print('distEuclidean(point, self.end) < branch_size:', distEuclidean(point, self.end) < branch_size)
                 # print('self.validateLinePath(point, self.end):', self.validateLinePath(point, self.end))
