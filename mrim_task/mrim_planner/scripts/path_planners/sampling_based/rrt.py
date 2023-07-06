@@ -105,7 +105,7 @@ class RRT:
 
         # check if point is at least safety_distance away from the nearest obstacle
         nn_dist, _  = self.kdtree.query(point.asList(), k=1)
-        return nn_dist > self.safety_distance + 0.1 # inflate distance a bit for safety 
+        return nn_dist > self.safety_distance + 0.5 # inflate distance a bit for safety 
     # # #}
 
     # # #{ getRandomPoint()
