@@ -263,7 +263,7 @@ class RRT:
         Nrun_max = 3
         Nrun = 1
 
-        rrt_gaussian_sigma_inflation = 0.0
+        rrt_gaussian_sigma_inflation = self.gaussian_sampling_sigma_inflation
 
 
 
@@ -280,10 +280,10 @@ class RRT:
             # normalize vector closest_point->point to length of branch_size
             point = self.setDistance(closest_point, point, branch_size)
 
-            print('DEBUG - checking line')
+            #print('DEBUG - checking line')
             if self.validateLinePath(point, closest_point, check_bounds=True):
 
-                print(f'\n{closest_point}->{point} solved!')
+                #print(f'\n{closest_point}->{point} solved!')
 
                 if not rrtstar:
                     parent, cost = closest_point, distEuclidean(point, closest_point)
@@ -304,7 +304,7 @@ class RRT:
             
             # Gaussian sampling: increase standard deviation of the sampling Normal distribution
             elif self.gaussian_sampling:
-                print(f'{closest_point}->{point} bad (sigma: {rrt_gaussian_sigma_inflation:.2f})',end='\r')
+                #print(f'{closest_point}->{point} bad (sigma: {rrt_gaussian_sigma_inflation:.2f})',end='\r')
                 rrt_gaussian_sigma_inflation += self.gaussian_sampling_sigma_inflation
                 if rrt_gaussian_sigma_inflation > 2.0: 
                     rrt_gaussian_sigma_inflation = 2.0 
