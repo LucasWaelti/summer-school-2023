@@ -259,20 +259,10 @@ class RRT:
         rrtstar                      = rrtstar_neighborhood is not None
         start_time                   = time.time()
 
-        start_tree = copy.deepcopy(self.tree)
-        Nrun_max = 3
-        Nrun = 1
-
-        rrt_gaussian_sigma_inflation = self.gaussian_sampling_sigma_inflation
-
-
+        rrt_gaussian_sigma_inflation = 0.0
 
         while not self.tree.valid:
 
-            #start over if a internal run is used up.
-            if time.time() - start_time > Nrun/Nrun_max * self.timeout:
-                self.tree = start_tree
-                Nrun += 1
 
             point         = self.getRandomPoint() if not self.gaussian_sampling else self.getRandomPointGaussian(rrt_gaussian_sigma_inflation)
             closest_point = self.getClosestPoint(point)
