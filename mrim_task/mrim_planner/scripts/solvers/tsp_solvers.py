@@ -79,7 +79,7 @@ class TSPSolver3D():
 
     # #{ plan_tour()
 
-    def plan_tour(self, problem, viewpoints, path_planner=None):
+    def plan_tour(self, problem:InspectionProblem, viewpoints, path_planner=None):
         '''
         Solve TSP on viewpoints with given goals and starts
 
@@ -98,6 +98,8 @@ class TSPSolver3D():
         n              = len(viewpoints)
         self.distances = np.zeros((n, n))
         self.paths = {}
+
+        #print(f'DEBUG - Got {n} viewpoints ({(n - 1)*n} pairs to evaluate) with {path_planner["distance_estimation_method"]} method')
 
         # find path between each pair of goals (a, b)
         for a in range(n):
@@ -277,9 +279,10 @@ class TSPSolver3D():
 
             # TODO: fill 1D list 'labels' of size len(viewpoints) with indices of the robots
             print('    [clusterViewpoints] running KMeans')
-            kmeans:KMeans = KMeans(2).fit(positions)
+            kmeans:KMeans = KMeans(n_clusters=2, n_init=10, max_iter=300, tol=1e-4).fit(positions)
             labels = kmeans.predict(positions)
 
+            # Swap labels if needed
             from geometry_msgs.msg._Point import Point as P
             robot0:P = problem.start_poses[0].position
             robot1:P = problem.start_poses[1].position

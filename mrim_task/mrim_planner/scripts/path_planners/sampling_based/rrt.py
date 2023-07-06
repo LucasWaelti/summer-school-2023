@@ -54,7 +54,9 @@ class RRT:
     # # #{ generatePath()
     def generatePath(self, g_start, g_end, path_planner, rrtstar=False, straighten=False):
 
-        print("[INFO] {:s}: Searching for path from [{:.2f}, {:.2f}, {:.2f}] to [{:.2f}, {:.2f}, {:.2f}].".format('RRT*' if rrtstar else 'RRT', g_start[0], g_start[1], g_start[2], g_end[0], g_end[1], g_end[2]))
+        print("[INFO] {:s}: Searching for path from [{:.2f}, {:.2f}, {:.2f}] to [{:.2f}, {:.2f}, {:.2f}] (distance: {:.2f})."\
+              .format('RRT*' if rrtstar else 'RRT', g_start[0], g_start[1], g_start[2], g_end[0], g_end[1], g_end[2], distEuclidean(g_start, g_end)))
+        
         self.start = tuple(g_start[0:3])
         self.end   = tuple(g_end[0:3])
 
@@ -139,6 +141,7 @@ class RRT:
 
         point       = None
         point_valid = False
+        it = 0
         while not point_valid:
 
             #raise NotImplementedError('[STUDENTS TODO] Implement Gaussian sampling in RRT to speed up the process and narrow the paths.')
@@ -147,15 +150,17 @@ class RRT:
             #  - to prevent deadlocks when sampling continuously, increase the sampling space by inflating the standard deviation of the gaussian sampling
 
             # STUDENTS TODO: Sample XYZ in the state space
-            x = np.random.normal(mean[0], sigma[0])
-            y = np.random.normal(mean[1], sigma[1])
-            z = np.random.normal(mean[2], sigma[2])
+            x = np.random.normal(mean[0], sigma[0] * sigma_offset)
+            y = np.random.normal(mean[1], sigma[1] * sigma_offset)
+            z = np.random.normal(mean[2], sigma[2] * sigma_offset)
 
             point = Point(x, y, z)
             point_valid = self.pointValid(point)
+            it += 1
+            if it > 1000:
+                return point.asTuple() # Return point even if it is not valid
 
-            sigma += self.gaussian_sampling_sigma_inflation # Inflate sigma locally only! (not globally)
-            
+            #sigma += self.gaussian_sampling_sigma_inflation # Inflate sigma locally only! (not globally)
         return point.asTuple()
     # # #}
 
@@ -275,7 +280,10 @@ class RRT:
             # normalize vector closest_point->point to length of branch_size
             point = self.setDistance(closest_point, point, branch_size)
 
-            if self.validateLinePath(point, closest_point):
+            print('DEBUG - checking line')
+            if self.validateLinePath(point, closest_point, check_bounds=True):
+
+                print(f'\n{closest_point}->{point} solved!')
 
                 if not rrtstar:
                     parent, cost = closest_point, distEuclidean(point, closest_point)
@@ -296,7 +304,10 @@ class RRT:
             
             # Gaussian sampling: increase standard deviation of the sampling Normal distribution
             elif self.gaussian_sampling:
+                print(f'{closest_point}->{point} bad (sigma: {rrt_gaussian_sigma_inflation:.2f})',end='\r')
                 rrt_gaussian_sigma_inflation += self.gaussian_sampling_sigma_inflation
+                if rrt_gaussian_sigma_inflation > 2.0: 
+                    rrt_gaussian_sigma_inflation = 2.0 
 
             if time.time() - start_time > self.timeout:
                 print("[ERROR] {:s}: Timeout limit in buildTree() exceeded ({:.1f} s > {:.1f} s). Ending.".format('RRT*' if rrtstar else 'RRT', time.time() - start_time, self.timeout))

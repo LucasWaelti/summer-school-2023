@@ -186,7 +186,7 @@ class MrimPlanner:
 
         # print out viewpoints
         for i in range(len(viewpoints)):
-            print('viewpoints for UAV:', problem.robot_ids[i])
+            print(f'{len(viewpoints[i]):d} viewpoints for UAV:', problem.robot_ids[i])
             for vp in viewpoints[i]:
                 print('   [{:d}]:'.format(vp.idx), vp.pose)
 
