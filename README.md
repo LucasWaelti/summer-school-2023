@@ -1,5 +1,9 @@
 # MRS Summer School 2023: multi-robot inspection and monitoring
 
+> Competition repository (this repo, with implemented solution): https://github.com/LucasWaelti/summer-school-2023 
+
+> Original repository: https://github.com/ctu-mrs/summer-school-2023 
+
 |        | 20.04                                                                                                                                       | 22.04                                                                                                                                       |
 | :---   | :---:                                                                                                                                       | :---:                                                                                                                                       |
 | Status | [![Status](https://github.com/ctu-mrs/summer-school-2023/workflows/Focal/badge.svg)](https://github.com/ctu-mrs/summer-school-2023/actions) | [![Status](https://github.com/ctu-mrs/summer-school-2023/workflows/Jammy/badge.svg)](https://github.com/ctu-mrs/summer-school-2023/actions) |
@@ -197,7 +201,7 @@ Stopping the simulation is done by calling
 ```
 **Things to configure/change :**
 * **Problem Type:** By default, the `run_simulation.sh` spawns you 2 UAVs in the `single_tower` world.
-To change the world to `four_towers`, you have to
+  To change the world to `four_towers`, you have to
 
   * change the parameter `problem/name` in the `mrim_task/mrim_planner/config/virtual.yaml` to one of the `four_towers` problems (see section [Testing](https://github.com/ctu-mrs/summer-school-2023#testing)) and
   * change variable `PROBLEM` in `simulation/tmux_scripts/simulation/session.yml` from `export PROBLEM=single_tower` to `export PROBLEM=four_towers`.
